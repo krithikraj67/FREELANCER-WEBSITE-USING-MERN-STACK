@@ -1,19 +1,19 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import myAxios from "./myAxios";
+import axios from "axios";
 
 export const myConversations = createAsyncThunk(
   "client/myConversations",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get("/chat/all", {
+      const res = await axios.get("/chat/all", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       return res.data;
     } catch (e) {
-      if (e.message == "Network Error") {
+      if (e.message === "Network Error") {
         return rejectWithValue("Check The Server");
       }
     }
@@ -24,14 +24,14 @@ export const conversationMessages = createAsyncThunk(
   async (chatId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get(`/chat/messages/${chatId}`, {
+      const res = await axios.get(`/chat/messages/${chatId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       return res.data;
     } catch (e) {
-      if (e.message == "Network Error") {
+      if (e.message === "Network Error") {
         return rejectWithValue("Check The Server");
       }
     }
@@ -42,7 +42,7 @@ export const sendMessage = createAsyncThunk(
   async ({ receiver, text }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.post(
+      const res = await axios.post(
         `/chat/sendMessage`,
         { receiver, text },
         {
@@ -53,7 +53,7 @@ export const sendMessage = createAsyncThunk(
       );
       return res.data;
     } catch (e) {
-      if (e.message == "Network Error") {
+      if (e.message === "Network Error") {
         return rejectWithValue("Check The Server");
       }
     }

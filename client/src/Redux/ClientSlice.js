@@ -1,12 +1,13 @@
+/* eslint-disable eqeqeq */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import myAxios from "./myAxios";
+import axios from "axios";
 
 export const myDashboard = createAsyncThunk(
   "client/myDashboard",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get("/client/dashboard", {
+      const res = await axios.get("/client/dashboard", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -25,7 +26,7 @@ export const freelancersServices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get("/client/allServices", {
+      const res = await axios.get("/client/allServices", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,7 +45,7 @@ export const serviceInfo = createAsyncThunk(
   async (serviceId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get(`/client/service/${serviceId}`, {
+      const res = await axios.get(`/client/service/${serviceId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,7 +64,7 @@ export const getOrders = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get(`/client/orders`, {
+      const res = await axios.get(`/client/orders`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -82,7 +83,7 @@ export const orderInfo = createAsyncThunk(
   async (orderId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.get(`/client/order/${orderId}`, {
+      const res = await axios.get(`/client/order/${orderId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,7 +102,7 @@ export const makeOrder = createAsyncThunk(
   async (serviceId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.post(
+      const res = await axios.post(
         `/client/order`,
         { serviceId },
         {
@@ -124,7 +125,7 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ orderId, status }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.put(
+      const res = await axios.put(
         `/client/order/${orderId}`,
         { status: status },
         {
@@ -147,7 +148,7 @@ export const makeTestimonial = createAsyncThunk(
   async ({ orderId, text, rating }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await myAxios.post(
+      const res = await axios.post(
         `/client/testimonial/${orderId}`,
         { text, rating },
         {

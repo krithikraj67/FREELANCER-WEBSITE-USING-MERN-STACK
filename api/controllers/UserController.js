@@ -26,6 +26,7 @@ const registerUser = async (
   image,
   role
 ) => {
+  console.log("registerUser", fullName);
   const allUsers = await findUsers();
   const userExists = allUsers.find(
     (e) => e.email == email || e.username == username
@@ -55,20 +56,26 @@ const registerUser = async (
   }
 };
 const loginUser = async (username, password) => {
-  const allUsers = await findUsers();
-  const userExists = allUsers.find((e) => e.username == username);
-  if (userExists) {
-    const result = await bcrypt.compare(password, userExists.password);
-    if (result) {
-      const token = jwt.sign({ userId: userExists._id }, process.env.SECRET);
-      return {
-        token,
-        user: userExists,
-      };
+  try {
+    const allUsers = await findUsers();
+    const userExists = allUsers.find((e) => e.username === username);
+
+    if (userExists) {
+      const result = bcrypt.compare(password, userExists.password);
+      if (result) {
+        const token = jwt.sign({ userId: userExists._id }, process.env.SECRET);
+        return {
+          token,
+          user: userExists,
+        };
+      }
+      return { error: "Invalid password" };
+    } else {
+      return { error: "User not found" };
     }
-    return 1;
-  } else {
-    return null;
+  } catch (error) {
+    console.error("Error in loginUser:", error);
+    throw new Error("Login failed");
   }
 };
 

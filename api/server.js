@@ -25,5 +25,5 @@ app.use("/ServicePic", express.static(__dirname + "/uploads/UsersServices"));
 
 app.listen(port, (err) => {
   if (err) console.log("Server Error :" + err.message);
-  else console.log("Server Runnig on Port: " + port);
+  else console.log("Server Running on Port: " + port);
 });

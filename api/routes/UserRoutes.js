@@ -1,22 +1,54 @@
 const express = require("express");
-const route = express.Router();
-const VerifyToken = require("../middleware/Auth");
+const router = express.Router();
+const multer = require("multer");
 const {
-  registerUser,
+  userExists,
   findUserById,
-  updateUser,
+  findUsers,
+  registerUser,
   loginUser,
+  updateUser,
 } = require("../controllers/UserController");
-const {
-  createProfileUploadImage,
-  updateProfileUploadImage,
-} = require("../middleware/uploadImage");
 
-route.post("/register", createProfileUploadImage, async (req, res) => {
-  const image = req.file && req.file.filename;
-  const { fullName, age, email, username, password, role } = req.body;
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/Users_imgs");
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}_${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
+router.get("/users", async (req, res) => {
   try {
-    const createdUser = await registerUser(
+    const users = await findUsers();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/users/:id", async (req, res) => {
+  try {
+    const user = await findUserById(req.params.id);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/register", upload.single("image"), async (req, res) => {
+  const { fullName, age, email, username, password, role } = req.body;
+  const image = req.file ? req.file.filename : null;
+
+  try {
+    const user = await registerUser(
       fullName,
       age,
       email,
@@ -25,67 +57,57 @@ route.post("/register", createProfileUploadImage, async (req, res) => {
       image,
       role
     );
-    if (createdUser) {
-      return res.json({ msg: "User Created Successfully", status: 200 });
+    if (user) {
+      res.status(201).json(user);
+    } else {
+      res.status(400).json({ error: "User already exists" });
     }
-    return res.json({ msg: "Username Or Email Already Exists", status: 403 });
-  } catch (err) {
-    return res.json({ msg: "Error Occured: " + err.message, status: 505 });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-route.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
   try {
-    const { username, password } = req.body;
-    const authentifiedUser = await loginUser(username, password);
-    if (authentifiedUser) {
-      if (authentifiedUser == 1) {
-        return res.json({ msg: "Wrong Credentials", status: 401 });
+    const userData = await loginUser(username, password);
+    if (userData) {
+      if (userData === 1) {
+        res.status(401).json({ error: "Invalid password" });
       } else {
-        return res.json({
-          msg: "Logged Successfully",
-          token: authentifiedUser.token,
-          userInfo: authentifiedUser.user,
-          status: 200,
-        });
+        res.json(userData);
       }
+    } else {
+      res.status(404).json({ error: "User not found" });
     }
-    return res.json({ msg: "User Doesn't Exists", status: 404 });
-  } catch (err) {
-    return res.json({ msg: "Error Occured: " + err.message, status: 505 });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-route.put(
-  "/update",
-  VerifyToken,
-  updateProfileUploadImage,
-  async (req, res) => {
-    const imageFile = req.file && req.file.filename;
-    const { fullName, age, username, image } = req.body;
+router.put("/users/:id", upload.single("image"), async (req, res) => {
+  const { fullName, age, username } = req.body;
+  const image = req.body.image;
+  const imageFile = req.file ? req.file.filename : null;
+
+  try {
     const updatedUser = await updateUser(
-      req.userId,
+      req.params.id,
       fullName,
       age,
       username,
       image,
       imageFile
     );
-    const updatedUserInfo = await findUserById(req.userId);
-    try {
-      if (updatedUser) {
-        return res.json({
-          msg: "User Updated Successfully",
-          updatedUserInfo,
-          status: 200,
-        });
-      } else {
-        return res.json({ msg: "User Doesn't Exists", status: 404 });
-      }
-    } catch (err) {
-      return res.json({ msg: "Error Occured: " + err.message, status: 505 });
+    if (updatedUser) {
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ error: "User not found" });
     }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-);
+});
 
-module.exports = route;
+module.exports = router;
