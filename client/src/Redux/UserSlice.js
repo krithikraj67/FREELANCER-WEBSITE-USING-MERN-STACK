@@ -118,7 +118,7 @@ const userSlice = createSlice({
 
 export const { logout } = userSlice.actions;
 
-export const tokenExists = (token, dispatch) => {
+export const tokenExists = (token) => {
   if (!token) {
     return false;
   }

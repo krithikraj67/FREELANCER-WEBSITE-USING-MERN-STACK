@@ -4,6 +4,7 @@ import axios from "axios";
 const initialState = {
   allServices: [],
   selectedService: null,
+  data: null,
   loading: false,
   error: null,
 };
@@ -82,13 +83,82 @@ export const updateService = createAsyncThunk(
   }
 );
 
+// export const myDashboard = createAsyncThunk(
+//   "freelancer/myDashboard",
+//   async (_, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(
+//         "http://localhost:3001/freelancer/dashboard"
+//       );
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response.data.message);
+//     }
+//   }
+// );
+export const myDashboard = createAsyncThunk(
+  "freelancer/myDashboard",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3001/freelancer/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Add the token to the request headers
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data.msg);
+    }
+  }
+);
+
 const freelancerSlice = createSlice({
   name: "freelancer",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // ... existing cases for myServices, deleteService, and createService
+      .addCase(myServices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(myServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allServices = action.payload;
+      })
+      .addCase(myServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteService.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteService.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allServices = state.allServices.filter(
+          (service) => service._id !== action.meta.arg
+        );
+      })
+      .addCase(deleteService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(createService.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createService.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allServices.push(action.payload);
+      })
+      .addCase(createService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(showService.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -111,6 +181,18 @@ const freelancerSlice = createSlice({
         state.selectedService = action.payload.updatedService;
       })
       .addCase(updateService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(myDashboard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(myDashboard.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(myDashboard.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
