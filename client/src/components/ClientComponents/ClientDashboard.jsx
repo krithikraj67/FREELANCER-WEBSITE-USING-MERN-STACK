@@ -20,35 +20,35 @@ export default function ClientDashboard() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    tokenExists(token, navigate, dispatch).then(
-      (data) =>
-        (data == false ||
-          JSON.parse(localStorage.getItem("userInfo")).role != "client" ||
-          JSON.parse(localStorage.getItem("userInfo"))._id != id) &&
-        navigate("/login")
-    );
+    async function checkTokenAndFetchDashboard() {
+      try {
+        setLoading(false);
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const tokenValid = tokenExists(token);
+        if (!tokenValid || userInfo._id !== id) {
+          navigate("/login");
+          return;
+        }
 
-    dispatch(myDashboard())
-      .unwrap()
-      .then((data) => {
-        setTimeout(() => {
-          setLoading(false);
-          if (data.status == 404 || data.status == 403) {
-            toast.error(data.msg);
-            navigate("/login");
-          }
-          if (data.status == 505) {
-            toast.error(data.msg);
-          }
-        }, 1000);
-      })
-      .catch((rejectedValueOrSerializedError) => {
-        setTimeout(() => {
-          setLoading(false);
-          toast.error(rejectedValueOrSerializedError);
-        }, 1000);
-      });
-  }, []);
+        const dashboardData = await dispatch(myDashboard()).unwrap();
+        setLoading(false);
+
+        if (
+          dashboardData.status === 404 ||
+          dashboardData.status === 403 ||
+          dashboardData.status === 505
+        ) {
+          toast.error(dashboardData.msg);
+          navigate("/login");
+        }
+      } catch (error) {
+        setLoading(false);
+        console.error(error || "An error occurred");
+      }
+    }
+
+    checkTokenAndFetchDashboard();
+  }, [navigate, dispatch, id, token]);
   return (
     <>
       {loading && <Loading />}
@@ -96,7 +96,7 @@ export default function ClientDashboard() {
                 <div className="testimonials">
                   <div className="header">Last Reviews Made By Me</div>
                   <div className="cards">
-                    {data?.dashboard?.testimonials.length != 0 ? (
+                    {data?.dashboard?.testimonials.length !== 0 ? (
                       <TestimonialSlider
                         role="client"
                         data={data?.dashboard?.testimonials}

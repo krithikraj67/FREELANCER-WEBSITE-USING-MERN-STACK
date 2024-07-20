@@ -9,11 +9,13 @@ const initialState = {
   error: null,
 };
 
+const API_URL = "http://localhost:3001";
+
 export const myServices = createAsyncThunk(
   "freelancer/myServices",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/freelancer/services"); // Replace with your actual API endpoint
+      const response = await axios.get(`${API_URL}/freelancer/myServices`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -26,7 +28,7 @@ export const deleteService = createAsyncThunk(
   async (serviceId, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `/api/freelancer/service/${serviceId}`
+        `${API_URL}/freelancer/service/${serviceId}`
       ); // Replace with your actual API endpoint
       return response.data;
     } catch (error) {
@@ -39,11 +41,16 @@ export const createService = createAsyncThunk(
   "freelancer/createService",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/freelancer/service", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/freelancer/service`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -55,7 +62,9 @@ export const showService = createAsyncThunk(
   "freelancer/showService",
   async (serviceId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/api/freelancer/service/${serviceId}`); // Replace with your actual API endpoint
+      const response = await axios.get(
+        `${API_URL}/freelancer/service/${serviceId}`
+      ); // Replace with your actual API endpoint
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -68,7 +77,7 @@ export const updateService = createAsyncThunk(
   async ({ serviceId, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `/api/freelancer/service/${serviceId}`,
+        `${API_URL}/freelancer/service/${serviceId}`,
         formData,
         {
           headers: {
@@ -83,31 +92,15 @@ export const updateService = createAsyncThunk(
   }
 );
 
-// export const myDashboard = createAsyncThunk(
-//   "freelancer/myDashboard",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.get(
-//         "http://localhost:3001/freelancer/dashboard"
-//       );
-//       return response.data;
-//     } catch (error) {
-//       return rejectWithValue(error.response.data.message);
-//     }
-//   }
-// );
 export const myDashboard = createAsyncThunk(
   "freelancer/myDashboard",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "http://localhost:3001/freelancer/dashboard",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Add the token to the request headers
-          },
-        }
-      );
+      const response = await axios.get(`${API_URL}/freelancer/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Add the token to the request headers
+        },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.msg);

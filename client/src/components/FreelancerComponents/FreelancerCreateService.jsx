@@ -20,14 +20,23 @@ export default function FreelancerCreateService() {
   const image = useRef();
 
   useEffect(() => {
-    tokenExists(token, navigate, dispatch).then(
-      (data) =>
-        (data === false ||
-          JSON.parse(localStorage.getItem("userInfo")).role !== "freelancer" ||
-          JSON.parse(localStorage.getItem("userInfo"))._id !== id) &&
-        navigate("/login")
-    );
-  }, []);
+    async function validateUser() {
+      try {
+        const tokenValid = await tokenExists(token);
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        if (
+          !tokenValid ||
+          userInfo.role !== "freelancer" ||
+          userInfo._id !== id
+        ) {
+          navigate("/login");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    validateUser();
+  }, [token, id, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -56,7 +65,7 @@ export default function FreelancerCreateService() {
         myForm.description.length < 20
       ) {
         err.push(
-          "Description invalid. It must contain letters and more than 20 caracters"
+          "Description invalid. It must contain letters and more than 20 characters"
         );
       }
       if (!/^\d+$/.test(myForm.price) || parseFloat(myForm.price) < 5) {

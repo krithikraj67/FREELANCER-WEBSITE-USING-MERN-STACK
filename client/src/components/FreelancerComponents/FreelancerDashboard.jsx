@@ -25,11 +25,7 @@ export default function FreelancerDashboard() {
         const tokenValid = await tokenExists(token);
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-        if (
-          !tokenValid ||
-          userInfo.role !== "freelancer" ||
-          userInfo._id !== id
-        ) {
+        if (!tokenValid || userInfo._id !== id) {
           navigate("/login");
           return;
         }

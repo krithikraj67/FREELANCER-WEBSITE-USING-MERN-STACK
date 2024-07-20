@@ -37,16 +37,15 @@ export default function Login() {
 
       // Store user info in localStorage
       localStorage.setItem("userInfo", JSON.stringify(response.user));
-
       if (response.user.role === "client") {
         navigate(`/dashboard/client/${response.user._id}`);
-      } else {
+      } else if (response.user.role === "freelancer") {
         navigate(`/dashboard/freelancer/${response.user._id}`);
       }
     } catch (error) {
       setLoading(false);
       // Handle errors (toast or other UI feedback)
-      console.error("Login failed:", error);
+      toast.error(`Login failed: ${error.message}`);
     }
   };
 

@@ -7,8 +7,8 @@ import Messages from "./Messages";
 import ClientMenu from "./ClientComponents/ClientMenu";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import tokenExists from "../Redux/ChatSlice";
-import myConversations from "../Redux/ClientSlice";
+import tokenExists from "../Redux/UserSlice"; // Ensure correct import
+import myConversations from "../Redux/ClientSlice"; // Ensure correct import
 import Loading from "./Loading";
 import { toast } from "react-toastify";
 
@@ -22,35 +22,40 @@ export default function Chat({ type }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    tokenExists(token, navigate, dispatch).then(
-      (data) =>
-        (data == false ||
-          JSON.parse(localStorage.getItem("userInfo"))._id != id ||
-          window.location.href.slice(32).split("/")[0] !=
-            JSON.parse(localStorage.getItem("userInfo")).role) &&
-        navigate("/login")
-    );
+    async function validateUser() {
+      try {
+        const tokenValid = tokenExists(token); // Await the token validation
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        if (
+          !tokenValid ||
+          userInfo.role !== "freelancer" ||
+          userInfo._id !== id
+        ) {
+          navigate("/login");
+        }
+      } catch (err) {
+        navigate("/login");
+      }
+    }
+    validateUser();
     dispatch(myConversations())
       .unwrap()
       .then((data) => {
-        setTimeout(() => {
-          setLoading(false);
-          if (data.status == 404) {
-            toast.error(data.msg);
-            navigate("/login");
-          }
-          if (data.status == 505) {
-            toast.error(data.msg);
-          }
-        }, 1000);
+        console.log(data);
+        setLoading(false);
+        if (data.status == 404) {
+          toast.error(data.msg);
+          navigate("/login");
+        }
+        if (data.status == 505) {
+          toast.error(data.msg);
+        }
       })
       .catch((rejectedValueOrSerializedError) => {
-        setTimeout(() => {
-          setLoading(false);
-          toast.error(rejectedValueOrSerializedError);
-        }, 1000);
+        setLoading(false);
+        toast.error(rejectedValueOrSerializedError);
       });
-  }, []);
+  }, [dispatch, navigate, id, token]);
 
   return (
     <>

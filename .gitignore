@@ -6,3 +6,4 @@ socket/node_modules/
 
 # Ignore node_modules in client directory
 client/node_modules/
+/api/uploads/UsersServices

@@ -39,10 +39,10 @@ export const updateUser = createAsyncThunk(
   "user/updateUser",
   async (formData) => {
     try {
-      const response = await fetch(`${apiUrl}/user/login`, {
-        method: "POST",
+      const id = formData.get("userID");
+      const response = await axios.put(`${apiUrl}/user/users/${id}`, {
+        method: "PUT",
         body: formData,
-        // Add necessary headers for form data if required
       });
       const data = await response.json();
       return data; // Adjust as per your API response structure
@@ -93,7 +93,6 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       state.user = action.payload.userInfo;
       localStorage.setItem("token", action.payload.token);
-      localStorage.setItem("userInfo", JSON.stringify(action.payload.userInfo));
     });
     builder.addCase(login.rejected, (state, action) => {
       state.status = "failed";
@@ -125,10 +124,8 @@ export const tokenExists = (token) => {
 
   try {
     const userInfoString = localStorage.getItem("userInfo");
-    if (!userInfoString) {
-      return false;
-    }
-    return true; // Indicate token exists and user info is valid
+    if (!userInfoString) return false;
+    return true;
   } catch (error) {
     console.error("Error parsing userInfo from localStorage:", error);
     return false;

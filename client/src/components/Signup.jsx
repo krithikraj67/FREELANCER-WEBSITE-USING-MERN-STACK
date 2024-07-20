@@ -39,7 +39,7 @@ export default function Signup() {
     setImage(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const err = [];
     const myForm = {
@@ -126,23 +126,35 @@ export default function Signup() {
         body.append("image", image);
       }
 
-      dispatch(signUp(body))
-        .unwrap()
-        .then((data) => {
-          setLoading(false);
-          if (data.status === 200) {
-            toast.success(data.msg);
-            navigate("/login");
-          } else if (data.status === 403) {
-            toast.info(data.msg);
-          } else {
-            toast.error(data.msg);
-          }
-        })
-        .catch((rejectedValueOrSerializedError) => {
-          setLoading(false);
-          toast.error(rejectedValueOrSerializedError.message);
-        });
+      try {
+        const response = await dispatch(signUp(body)).unwrap();
+        setLoading(false);
+        toast.success("User registered successfully");
+
+        if (response.status === 201) {
+          navigate("/login");
+        }
+      } catch (error) {
+        toast.error(`Error occurred: ${error.message}`);
+      }
+
+      // dispatch(signUp(body))
+      //   .unwrap()
+      //   .then((data) => {
+      //     setLoading(false);
+      //     if (data.status === 200) {
+      //       toast.success(data.msg);
+      //       navigate("/login");
+      //     } else if (data.status === 403) {
+      //       toast.info(data.msg);
+      //     } else {
+      //       toast.error(data.msg);
+      //     }
+      //   })
+      //   .catch((rejectedValueOrSerializedError) => {
+      //     setLoading(false);
+      //     toast.error(rejectedValueOrSerializedError.message);
+      //   });
     }
   };
 
