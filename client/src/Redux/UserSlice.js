@@ -34,6 +34,40 @@ export const login = createAsyncThunk(
   }
 );
 
+// Async thunk for fetching users
+export const fetchUsers = createAsyncThunk(
+  "user/fetchUsers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${apiUrl}/users`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || { error: "Something went wrong" }
+      );
+    }
+  }
+);
+
+// Async thunk to fetch users by ID
+export const fetchUserById = createAsyncThunk(
+  "user/fetchUserById",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${apiUrl}/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return rejectWithValue({ error: "User not found" });
+      } else {
+        return rejectWithValue(
+          error.response?.data || { error: "Internal server error" }
+        );
+      }
+    }
+  }
+);
+
 // Async thunk for updating user profile
 export const updateUser = createAsyncThunk(
   "user/updateUser",
